@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SignalDesk/signaldesk.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+</Solution>
