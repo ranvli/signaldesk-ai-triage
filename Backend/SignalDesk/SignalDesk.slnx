@@ -1,3 +1,6 @@
 <Solution>
+  <Project Path="SignalDesk.Domain/SignalDesk.Domain.csproj" />
+  <Project Path="SignalDesk.Infrastructure/SignalDesk.Infrastructure.csproj" />
   <Project Path="SignalDesk/SignalDesk.csproj" />
+  <Project Path="SignalDesk.Tests/SignalDesk.Tests.csproj" />
 </Solution>

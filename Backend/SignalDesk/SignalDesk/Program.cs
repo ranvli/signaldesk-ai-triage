@@ -1,23 +1,59 @@
+using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
+using SignalDesk.Endpoints;
+using SignalDesk.Infrastructure.Data;
+using SignalDesk.Infrastructure.Repositories;
+using SignalDesk.Infrastructure.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "SignalDesk API", Version = "v1" }));
 
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy => policy
+        .WithOrigins("http://localhost:5173")
+        .AllowAnyMethod()
+        .AllowAnyHeader()));
+
+builder.Services.ConfigureHttpJsonOptions(opts =>
+    opts.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+// Database
+builder.Services.AddDbContext<SignalDeskDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=signaldesk.db"));
+
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+
+// AI service
+builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection(OllamaOptions.Section));
+builder.Services.AddHttpClient<OllamaFeedbackAiService>((sp, client) =>
+{
+    var opts = sp.GetRequiredService<IOptions<OllamaOptions>>().Value;
+    client.BaseAddress = new Uri(opts.BaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(60);
+});
+builder.Services.AddScoped<IFeedbackAiService, OllamaFeedbackAiService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseCors();
 
-app.UseAuthorization();
+using (var scope = app.Services.CreateScope())
+    scope.ServiceProvider.GetRequiredService<SignalDeskDbContext>().Database.EnsureCreated();
 
-app.MapControllers();
+app.MapFeedbackEndpoints();
 
 app.Run();
+
+public partial class Program { }
+
