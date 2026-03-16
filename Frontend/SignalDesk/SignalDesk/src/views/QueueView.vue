@@ -13,20 +13,25 @@
         v-for="item in feedbackQueue"
         :key="item.id"
         class="item-card"
-        :class="item.status"
+        :class="item.status.toLowerCase()"
       >
         <div class="item-meta">
           <div class="item-badges">
             <span class="badge category">{{ item.category }}</span>
-            <span class="badge status" :class="item.status">{{ item.status }}</span>
-            <span class="badge priority" :class="item.priority">{{ item.priority }}</span>
+            <span class="badge status" :class="item.status.toLowerCase()">{{ item.status }}</span>
+            <span class="badge priority" :class="item.priority.toLowerCase()">{{ item.priority }}</span>
           </div>
           <time class="created-at">{{ formatDate(item.createdAt) }}</time>
         </div>
 
         <p class="summary">{{ item.summary }}</p>
 
-        <div v-if="item.status !== 'actioned' && item.status !== 'dismissed'" class="item-actions">
+        <button v-if="item.text" class="btn-toggle" @click="toggleText(item.id)">
+          {{ expandedIds[item.id] ? 'Hide full feedback' : 'View full feedback' }}
+        </button>
+        <p v-if="expandedIds[item.id]" class="full-text">{{ item.text }}</p>
+
+        <div v-if="item.status !== 'Actioned' && item.status !== 'Dismissed'" class="item-actions">
           <button
             class="btn-action"
             :disabled="pendingId === item.id"
@@ -57,6 +62,11 @@ const { feedbackQueue } = storeToRefs(store)
 
 const pendingId = ref(null)
 const errorMsg = ref('')
+const expandedIds = ref({})
+
+function toggleText(id) {
+  expandedIds.value[id] = !expandedIds.value[id]
+}
 
 onMounted(() => store.loadFeedbackQueue())
 
@@ -132,7 +142,7 @@ h1 {
   transition: opacity 0.2s;
 }
 
-.item-card.pending {
+.item-card.open {
   border-left-color: #3498db;
 }
 
@@ -185,7 +195,7 @@ h1 {
 }
 
 /* status */
-.badge.status.pending   { background: #fff4e0; color: #b86e00; }
+.badge.status.open      { background: #fff4e0; color: #b86e00; }
 .badge.status.actioned  { background: #e6f9ee; color: #1a7a40; }
 .badge.status.dismissed { background: #f0f0f0; color: #777;    }
 
@@ -200,7 +210,34 @@ h1 {
   font-size: 0.95rem;
   color: #333;
   line-height: 1.55;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.btn-toggle {
+  background: none;
+  border: none;
+  color: #3498db;
+  font-size: 0.8rem;
+  padding: 0;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  display: block;
+}
+
+.btn-toggle:hover {
+  text-decoration: underline;
+}
+
+.full-text {
+  font-size: 0.88rem;
+  color: #555;
+  line-height: 1.6;
+  background: #f8f9fa;
+  border-left: 3px solid #ddd;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0 4px 4px 0;
+  margin-bottom: 0.75rem;
+  white-space: pre-wrap;
 }
 
 .item-card.dismissed .summary {

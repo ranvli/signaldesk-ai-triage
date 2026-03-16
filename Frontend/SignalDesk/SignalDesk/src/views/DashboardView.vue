@@ -7,18 +7,6 @@
 
     <template v-if="!loading && hasData">
 
-      <!-- Summary tiles -->
-      <div class="tile-row">
-        <div class="tile">
-          <span class="tile-value">{{ stats.total ?? 0 }}</span>
-          <span class="tile-label">Total</span>
-        </div>
-        <div v-for="t in statusTiles" :key="t.label" class="tile">
-          <span class="tile-value" :style="{ color: t.color }">{{ t.value }}</span>
-          <span class="tile-label">{{ t.label }}</span>
-        </div>
-      </div>
-
       <!-- By Category -->
       <section class="panel">
         <h2>By Category</h2>
@@ -71,30 +59,21 @@ const errorMsg = ref('')
 // ── Fixed definitions ──────────────────────────────────
 
 const CATEGORIES = [
-  { key: 'bug',             label: 'Bug',            color: '#e74c3c' },
-  { key: 'feature_request', label: 'Feature Request', color: '#3498db' },
-  { key: 'complaint',       label: 'Complaint',       color: '#e67e22' },
-  { key: 'praise',          label: 'Praise',          color: '#27ae60' },
+  { key: 'Bug',            label: 'Bug',            color: '#e74c3c' },
+  { key: 'FeatureRequest', label: 'Feature Request', color: '#3498db' },
+  { key: 'Complaint',      label: 'Complaint',       color: '#e67e22' },
+  { key: 'Praise',         label: 'Praise',          color: '#27ae60' },
 ]
 
 const PRIORITIES = [
-  { key: 'high',   label: 'High',   color: '#e74c3c' },
-  { key: 'medium', label: 'Medium', color: '#f39c12' },
-  { key: 'low',    label: 'Low',    color: '#27ae60' },
+  { key: 'High',   label: 'High',   color: '#e74c3c' },
+  { key: 'Medium', label: 'Medium', color: '#f39c12' },
+  { key: 'Low',    label: 'Low',    color: '#27ae60' },
 ]
 
 // ── Computed ─────────────────────────────────────
 
 const hasData = computed(() => Object.keys(stats.value).length > 0)
-
-const statusTiles = computed(() => {
-  const s = stats.value.statuses ?? {}
-  return [
-    { label: 'Pending',   value: s.pending   ?? 0, color: '#3498db' },
-    { label: 'Actioned',  value: s.actioned  ?? 0, color: '#27ae60' },
-    { label: 'Dismissed', value: s.dismissed ?? 0, color: '#95a5a6' },
-  ]
-})
 
 function toBarRows(definitions, source) {
   const rows = definitions.map(d => ({ ...d, count: source[d.key] ?? 0 }))
@@ -103,11 +82,11 @@ function toBarRows(definitions, source) {
 }
 
 const categoryRows = computed(() =>
-  toBarRows(CATEGORIES, stats.value.categories ?? {})
+  toBarRows(CATEGORIES, stats.value.byCategory ?? {})
 )
 
 const priorityRows = computed(() => {
-  const src = stats.value.priorities
+  const src = stats.value.byPriority
   if (!src || !Object.values(src).some(v => v > 0)) return []
   return toBarRows(PRIORITIES, src)
 })
@@ -161,39 +140,6 @@ h2 {
   border-radius: 4px;
   font-size: 0.9rem;
   margin-bottom: 1rem;
-}
-
-/* ── Summary tiles ────────────────────────────── */
-
-.tile-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.tile {
-  background: white;
-  border-radius: 8px;
-  padding: 1.25rem 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.tile-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #2c3e50;
-  line-height: 1;
-}
-
-.tile-label {
-  font-size: 0.78rem;
-  color: #999;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 /* ── Panels ─────────────────────────────────── */

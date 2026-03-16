@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:5000'
+const BASE_URL = 'http://localhost:5180'
 
 async function request(endpoint, options = {}) {
   const response = await fetch(`${BASE_URL}${endpoint}`, {
@@ -15,31 +15,29 @@ async function request(endpoint, options = {}) {
 
 export const api = {
   submitFeedback(payload) {
-    return request('/api/feedback', {
+    return request('/feedback', {
       method: 'POST',
       body: JSON.stringify(payload)
     })
   },
 
   getFeedbackItems() {
-    return request('/api/feedback')
+    return request('/feedback')
   },
 
   markActioned(id) {
-    return request(`/api/feedback/${id}/status`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status: 'actioned' })
+    return request(`/feedback/${id}/action`, {
+      method: 'PATCH'
     })
   },
 
   markDismissed(id) {
-    return request(`/api/feedback/${id}/status`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status: 'dismissed' })
+    return request(`/feedback/${id}/dismiss`, {
+      method: 'PATCH'
     })
   },
 
   getStats() {
-    return request('/api/feedback/stats')
+    return request('/stats')
   }
 }

@@ -30,13 +30,12 @@ builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
 // AI service
 builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection(OllamaOptions.Section));
-builder.Services.AddHttpClient<OllamaFeedbackAiService>((sp, client) =>
+builder.Services.AddHttpClient<IFeedbackAiService, OllamaFeedbackAiService>((sp, client) =>
 {
     var opts = sp.GetRequiredService<IOptions<OllamaOptions>>().Value;
-    client.BaseAddress = new Uri(opts.BaseUrl);
+    client.BaseAddress = new Uri(opts.BaseUrl + "/");
     client.Timeout = TimeSpan.FromSeconds(60);
 });
-builder.Services.AddScoped<IFeedbackAiService, OllamaFeedbackAiService>();
 
 var app = builder.Build();
 
